@@ -18,10 +18,12 @@ class RedactingFormatter(logging.Formatter):
         self.fields = fields
 
     def format(self, record: logging.LogRecord) -> str:
+        """Format specified record as text."""
         # https://stackoverflow.com/questions/16757578/
         # what-is-pythons-default-logging-formatter
         return filter_datum(
-            self.fields, self.REDACTION, super().format(record), self.SEPARATOR)
+            self.fields, self.REDACTION, super().format(record),
+            self.SEPARATOR)
 
 
 def filter_datum(fields: List[str], redaction: str, message: str,
