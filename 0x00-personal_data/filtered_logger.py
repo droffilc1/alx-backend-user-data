@@ -4,6 +4,9 @@ from typing import List
 import re
 import logging
 
+# PII fields to be obfuscated
+PII_FIELDS = ("name", "email", "phone", "ssn", "password")
+
 
 class RedactingFormatter(logging.Formatter):
     """ Redacting Formatter class
@@ -46,3 +49,18 @@ def filter_datum(fields: List[str], redaction: str, message: str,
     return re.sub(
         fr"({'|'.join(map(re.escape, fields))})=[^ {re.escape(separator)}]*",
         f"\\1={redaction}", message)
+
+
+def get_logger() -> logging.Logger:
+    """Creates a logger.
+    Returns a logging.Logger object.
+    """
+    logger = logging.getLogger("user_data")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    stream_handler = logger.StreamHandler()
+    stream_handler.setFormatter(RedactingFormatter(list(PII_FIELDS)))
+    logger.addHandler(stream_handler)
+
+    return logger
