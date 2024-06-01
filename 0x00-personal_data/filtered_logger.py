@@ -21,9 +21,9 @@ class RedactingFormatter(logging.Formatter):
     # what-is-pythons-default-logging-formatter
     def format(self, record: logging.LogRecord) -> str:
         """Format specified record as text."""
-        return filter_datum(
-            self.fields, self.REDACTION, super().format(record),
-            self.SEPARATOR)
+        record.msg = filter_datum(
+            self.fields, self.REDACTION, record.msg, self.SEPARATOR)
+        return super(RedactingFormatter, self).format(record)
 
 
 def filter_datum(fields: List[str], redaction: str, message: str,
