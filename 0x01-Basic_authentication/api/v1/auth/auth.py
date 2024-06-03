@@ -17,9 +17,29 @@ class Auth:
         Args:
           - path
           - excluded_paths
-        Returns: False
+        Returns: True if path is None
+                 True if excluded_paths is None or empty
+                 False if path is in excluded_paths
         """
-        return False
+        if path is None:
+            return True
+        if excluded_paths is None or len(excluded_paths) == 0:
+            return True
+
+        # Normalize paths by stripping trailing slashes
+        path = path.rstrip('/')
+        excluded_paths = [p.rstrip('/') for p in excluded_paths]
+
+        for excluded_path in excluded_paths:
+            # Handle wildcard: remove the '*' and check if path starts
+            # with excluded_path
+            if excluded_path.endswith('*'):
+                if path.startswith(excluded_path[:-1]):
+                    return False
+            elif path == excluded_path:
+                return False
+
+        return True
 
     def authorization_header(self, request=None) -> str:
         """ Defines public method `authorization_header`
