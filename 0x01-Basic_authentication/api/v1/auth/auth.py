@@ -46,8 +46,11 @@ class Auth:
         Args:
           -request: Flask object
         Returns: None
+                 Value of the header request.
         """
-        return None
+        if request is None or 'Authorization' not in request.headers:
+            return None
+        return request.headers['Authorization']
 
     def current_user(self, request=None) -> TypeVar('User'):
         """ Defines public method `current_user`
