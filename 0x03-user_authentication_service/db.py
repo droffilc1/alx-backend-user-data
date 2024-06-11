@@ -5,7 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from sqlalchemy.exc import NoResultFound, InvalidRequestError
+from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.orm.exc import NoResultFound
 
 from user import Base, User
 
@@ -35,32 +36,51 @@ class DB:
         """ Adds a user to the database
         Returns a User object
         """
+        # Create session
+        session = self._session
+
         # Add User object
         new_user = User(email=email, hashed_password=hashed_password)
-        self._session.add(new_user)
-        self._session.commit()
+        try:
+            self._session.add(new_user)
+            self._session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
         return new_user
 
     def find_user_by(self, **kwargs) -> User:
         """Returns first row found in the users table as filtered
         by the method's input arguments.
         """
+        session = self._session
         try:
-            user = self._session.query(User).filter_by(**kwargs).first()
+            user = session.query(User).filter_by(**kwargs).first()
             if user is None:
                 raise NoResultFound
             return user
         except (NoResultFound, InvalidRequestError) as e:
-            self._session.rollback()
+            session.rollback()
             raise e
+        finally:
+            session.close()
 
     def update_user(self, user_id: int, **kwargs) -> None:
         """Updates user
         """
-        user = self.find_user_by(id=user_id)
-        for key, value in kwargs.items():
-            if hasattr(User, key):
-                setattr(user, key, value)
-            else:
-                raise ValueError
-        self._session.commit()
+        session = self._session
+        try:
+            user = self.find_user_by(id=user_id)
+            for key, value in kwargs.items():
+                if hasattr(User, key):
+                    setattr(user, key, value)
+                else:
+                    raise ValueError
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
