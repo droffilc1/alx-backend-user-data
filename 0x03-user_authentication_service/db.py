@@ -36,41 +36,30 @@ class DB:
         """ Adds a user to the database
         Returns a User object
         """
-        # Create session
-        session = self._session
-
         # Add User object
         new_user = User(email=email, hashed_password=hashed_password)
-        try:
-            self._session.add(new_user)
-            self._session.commit()
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
+        self._session.add(new_user)
+        self._session.commit()
         return new_user
 
     def find_user_by(self, **kwargs) -> User:
         """Returns first row found in the users table as filtered
         by the method's input arguments.
         """
-        session = self._session
         try:
-            user = session.query(User).filter_by(**kwargs).first()
+            user = self._session.query(User).filter_by(**kwargs).first()
             if user is None:
                 raise NoResultFound
             return user
         except (NoResultFound, InvalidRequestError) as e:
-            session.rollback()
+            self._session.rollback()
             raise e
         finally:
-            session.close()
+            self._session.close()
 
     def update_user(self, user_id: int, **kwargs) -> None:
         """Updates user
         """
-        session = self._session
         try:
             user = self.find_user_by(id=user_id)
             for key, value in kwargs.items():
@@ -78,9 +67,9 @@ class DB:
                     setattr(user, key, value)
                 else:
                     raise ValueError
-            session.commit()
+            self._session.commit()
         except Exception as e:
-            session.rollback()
+            self._session.rollback()
             raise e
         finally:
-            session.close()
+            self._session.close()
