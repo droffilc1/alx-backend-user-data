@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """auth module
 """
-from typing import Optional
 import uuid
 
 import bcrypt
@@ -78,7 +77,7 @@ class Auth:
         except NoResultFound:
             return None
 
-    def get_user_from_session_id(self, session_id: str) -> Optional[User]:
+    def get_user_from_session_id(self, session_id: str) -> User:
         """Finds user by session ID
         """
         try:
