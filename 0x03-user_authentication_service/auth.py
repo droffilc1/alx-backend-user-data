@@ -81,7 +81,6 @@ class Auth:
     def get_user_from_session_id(self, session_id: str) -> Optional[User]:
         """Finds user by session ID
         """
-        user = None
         if session_id is None:
             return None
         try:
@@ -89,3 +88,8 @@ class Auth:
         except NoResultFound:
             return None
         return user
+
+    def destroy_session(self, user_id: int) -> None:
+        """Destroys session
+        """
+        self._db.update_user(user_id, session_id=None)
