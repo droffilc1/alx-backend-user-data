@@ -18,7 +18,7 @@ class DB:
     def __init__(self) -> None:
         """Initialize a new DB instance
         """
-        self._engine = create_engine("sqlite:///a.db", echo=True)
+        self._engine = create_engine("sqlite:///a.db", echo=False)
         Base.metadata.drop_all(self._engine)
         Base.metadata.create_all(self._engine)
         self.__session = None
@@ -36,15 +36,13 @@ class DB:
         """ Adds a user to the database
         Returns a User object
         """
-        # Add User object
-        new_user = User(email=email, hashed_password=hashed_password)
         try:
+            new_user = User(email=email, hashed_password=hashed_password)
             self._session.add(new_user)
             self._session.commit()
-        except Exception as e:
+        except Exception:
             self._session.rollback()
             new_user = None
-            raise e
         return new_user
 
     def find_user_by(self, **kwargs) -> User:
@@ -67,6 +65,8 @@ class DB:
         """
         try:
             user = self.find_user_by(id=user_id)
+            if user is None:
+                return
             for key, value in kwargs.items():
                 if hasattr(User, key):
                     setattr(user, key, value)
