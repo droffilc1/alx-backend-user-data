@@ -65,7 +65,7 @@ class Auth:
         except NoResultFound:
             return False
 
-    def create_session(self, email: str) -> str | None:
+    def create_session(self, email: str) -> str:
         """Get session ID
         """
         try:
