@@ -6,7 +6,6 @@ from flask import Flask, jsonify, request, abort, redirect
 from auth import Auth
 
 app = Flask(__name__)
-app.url_map.strict_slashes = False
 AUTH = Auth()
 
 
@@ -51,13 +50,25 @@ def logout():
     """DELETE /sessions
     """
     session_id = request.cookies.get('session_id')
+    if session_id:
+        user = AUTH.get_user_from_session_id(session_id)
+        if user:
+            AUTH.destroy_session(user.id)
+            return redirect('/')
+        abort(403)
+    abort(403)
 
-    user = AUTH.get_user_from_session_id(session_id)
 
-    if session_id and user is not None:
-        response = redirect('/')
-        response.delete_cookie('session_id')
-        return response
+@app.route("/profile", methods=["GET"])
+def profile():
+    """GET /profile
+    """
+    session_id = request.cookies.get('session_id')
+    if session_id:
+        user = AUTH.get_user_from_session_id(session_id)
+        if user:
+            return jsonify({"email": user.email}), 200
+        abort(403)
     abort(403)
 
 
