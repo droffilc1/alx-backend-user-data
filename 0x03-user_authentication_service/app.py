@@ -51,11 +51,13 @@ def logout():
     """DELETE /sessions
     """
     session_id = request.cookies.get('session_id')
-    if session_id:
-        user = AUTH.get_user_from_session_id(session_id)
-        if user is not None:
-            AUTH.destroy_session(user.id)
-            return redirect('/')
+
+    user = AUTH.get_user_from_session_id(session_id)
+
+    if session_id and user is not None:
+        response = redirect('/')
+        response.delete_cookie('session_id')
+        return response
     abort(403)
 
 
